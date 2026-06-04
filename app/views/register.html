@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>KidneyHub - Daftar Akun</title>
+</head>
+<body>
+  <h2>KidneyHub - Registri Donor Ginjal Nasional</h2>
+  <h3>Buat Akun Baru</h3>
+  {{error}}
+  <form method="POST" action="/register">
+    <table>
+      <tr>
+        <td>Username</td>
+        <td><input type="text" name="username" required minlength="3" maxlength="50"></td>
+      </tr>
+      <tr>
+        <td>Password</td>
+        <td><input type="password" name="password" required minlength="6"></td>
+      </tr>
+      <tr>
+        <td>Konfirmasi Password</td>
+        <td><input type="password" name="confirm_password" required minlength="6"></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><button type="submit">Daftar</button></td>
+      </tr>
+    </table>
+  </form>
+  <p>Sudah punya akun? <a href="/login">Login di sini</a></p>
+</body>
+</html>

@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+
+  db:
+    image: postgres:15-alpine
+    container_name: kidneyhub_db
+    environment:
+      POSTGRES_DB: kidneyhub
+      POSTGRES_USER: kidneyhub
+      POSTGRES_PASSWORD: kidneyhub_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kidneyhub -d kidneyhub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  web1:
+    build: ./app
+    container_name: kidneyhub_web1
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: kidneyhub
+      DB_USER: kidneyhub
+      DB_PASSWORD: kidneyhub_pass
+      JWT_SECRET: kidneyhub_jwt_secret_2024
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+  web2:
+    build: ./app
+    container_name: kidneyhub_web2
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: kidneyhub
+      DB_USER: kidneyhub
+      DB_PASSWORD: kidneyhub_pass
+      JWT_SECRET: kidneyhub_jwt_secret_2024
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: kidneyhub_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web1
+      - web2
+    networks:
+      - frontend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
