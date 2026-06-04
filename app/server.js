@@ -58,7 +58,7 @@ app.get('/', (req, res) => res.redirect('/login'));
 app.get('/register', (req, res) => {
   const error = req.query.error ? decodeURIComponent(req.query.error) : '';
   let html = readView('register.html');
-  html = html.replace('{{error}}', error ? `<p style="color:red">${error}</p>` : '');
+  html = html.replace('{{error}}', error ? `<div class="alert alert-error">${error}</div>` : '');
   res.send(html);
 });
 
@@ -98,8 +98,8 @@ app.get('/login', (req, res) => {
   const error = req.query.error ? decodeURIComponent(req.query.error) : '';
   const registered = req.query.registered === '1';
   let html = readView('login.html');
-  html = html.replace('{{error}}', error ? `<p style="color:red">${error}</p>` : '');
-  html = html.replace('{{success}}', registered ? '<p style="color:green">Registrasi berhasil! Silakan login.</p>' : '');
+  html = html.replace('{{error}}', error ? `<div class="alert alert-error">${error}</div>` : '');
+  html = html.replace('{{success}}', registered ? '<div class="alert alert-success">Registrasi berhasil! Silakan login.</div>' : '');
   res.send(html);
 });
 

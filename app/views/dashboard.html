@@ -2,15 +2,155 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KidneyHub - Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      background: #f9fafb;
+      color: #111827;
+    }
+    /* Navbar */
+    .navbar {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .logo-heart { color: #ef4444; }
+    .logo-kidney { color: #1d4ed8; }
+    .logo-hub { color: #0d9488; }
+    .logo-domain { color: #9ca3af; font-weight: 400; }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .nav-user { font-size: 0.875rem; color: #374151; font-weight: 500; }
+    .btn-logout {
+      padding: 0.4rem 0.9rem;
+      background: #fff;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-logout:hover { background: #f3f4f6; border-color: #9ca3af; }
+    /* Main content */
+    .main { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: #111827; }
+    .page-sub { color: #6b7280; font-size: 0.9rem; margin-top: 0.25rem; }
+    /* Welcome card */
+    .welcome-card {
+      margin-top: 1.5rem;
+      background: linear-gradient(135deg, #eff6ff, #f0fdfa);
+      border: 2px solid #bfdbfe;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .welcome-icon {
+      font-size: 2.5rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .welcome-title { font-size: 1.1rem; font-weight: 700; color: #1e3a8a; }
+    .welcome-desc { font-size: 0.875rem; color: #374151; margin-top: 0.3rem; line-height: 1.5; }
+    /* Info cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .card-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .card-value { font-size: 1rem; font-weight: 600; color: #111827; }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-blue { background: #dbeafe; color: #1d4ed8; }
+    @media (max-width: 500px) { .cards-grid { grid-template-columns: 1fr; } }
+  </style>
 </head>
 <body>
-  <h2>KidneyHub - Registri Donor Ginjal Nasional</h2>
-  <h3>Dashboard</h3>
-  <p>Selamat datang, <strong>{{username}}</strong>!</p>
-  <p>Anda berhasil login ke sistem KidneyHub.</p>
-  <hr>
-  <p><small>Dilayani oleh instance: {{hostname}}</small></p>
-  <p><a href="/logout">Logout</a></p>
+  <nav class="navbar">
+    <a href="/dashboard" class="nav-logo">
+      <span class="logo-heart">&#10084;</span>
+      <span><span class="logo-kidney">kidney</span><span class="logo-hub">hub</span><span class="logo-domain">.id</span></span>
+    </a>
+    <div class="nav-right">
+      <span class="nav-user">{{username}}</span>
+      <a href="/logout" class="btn-logout">Logout</a>
+    </div>
+  </nav>
+
+  <div class="main">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-sub">Selamat datang kembali di sistem KidneyHub</p>
+
+    <div class="welcome-card">
+      <div class="welcome-icon">&#9829;</div>
+      <div>
+        <p class="welcome-title">Selamat datang, {{username}}!</p>
+        <p class="welcome-desc">
+          Anda berhasil masuk ke sistem Registri Donor Ginjal Nasional KidneyHub.
+          Terima kasih atas kontribusi Anda dalam program donor ginjal Indonesia.
+        </p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <p class="card-label">Status Akun</p>
+        <span class="badge badge-green">&#10003; Aktif</span>
+      </div>
+      <div class="card">
+        <p class="card-label">Username</p>
+        <p class="card-value">{{username}}</p>
+      </div>
+      <div class="card">
+        <p class="card-label">Instance Server</p>
+        <span class="badge badge-blue">{{hostname}}</span>
+      </div>
+      <div class="card">
+        <p class="card-label">Sistem</p>
+        <p class="card-value" style="font-size:0.875rem;color:#6b7280;">KidneyHub Microservice</p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
