@@ -1,0 +1,78 @@
+<div class="section">
+  <div class="text-center mb-12">
+    <h1 class="section-title">Kontak Kami</h1>
+    <p class="section-desc max-w-xl">Ada pertanyaan? Tim kami siap membantu. Hubungi kami melalui formulir di bawah atau informasi kontak yang tersedia.</p>
+  </div>
+
+  <div class="contact-grid">
+    <!-- Info -->
+    <div>
+      <div class="contact-info-card">
+        <div class="contact-info-icon">&#128205;</div>
+        <div>
+          <p class="contact-info-label">Alamat</p>
+          <p class="contact-info-value">Jakarta, Indonesia</p>
+        </div>
+      </div>
+      <div class="contact-info-card">
+        <div class="contact-info-icon">&#9993;</div>
+        <div>
+          <p class="contact-info-label">Email</p>
+          <p class="contact-info-value">info@kidneyhub.id</p>
+        </div>
+      </div>
+      <div class="contact-info-card">
+        <div class="contact-info-icon">&#128222;</div>
+        <div>
+          <p class="contact-info-label">Telepon</p>
+          <p class="contact-info-value">+62 21 1234 5678</p>
+        </div>
+      </div>
+      <div class="contact-info-card">
+        <div class="contact-info-icon">&#128336;</div>
+        <div>
+          <p class="contact-info-label">Jam Kerja</p>
+          <p class="contact-info-value">Senin–Jumat, 08.00–17.00 WIB</p>
+        </div>
+      </div>
+      <div class="contact-emergency">
+        <h3>Untuk Kasus Darurat Medis</h3>
+        <p>Hubungi langsung unit transplantasi ginjal di rumah sakit mitra terdekat. KidneyHub.id bukan layanan gawat darurat.</p>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="card card-body">
+      {{success}}
+      <h2 class="font-bold mb-6" style="font-size:1.125rem;color:#111827;">Kirim Pesan</h2>
+      <form method="POST" action="/kontak-kami">
+        <div class="grid-2" style="gap:1rem;">
+          <div class="form-group">
+            <label class="form-label">Nama Lengkap</label>
+            <input type="text" name="name" class="form-input" placeholder="Nama Anda" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-input" placeholder="nama@email.com" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subjek</label>
+          <select name="subject" class="form-select">
+            <option value="">Pilih subjek...</option>
+            <option>Informasi Pendaftaran Donor</option>
+            <option>Proses Evaluasi Medis</option>
+            <option>Kerjasama Rumah Sakit</option>
+            <option>Pertanyaan Umum</option>
+            <option>Lainnya</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pesan</label>
+          <textarea name="message" class="form-textarea" placeholder="Tulis pesan Anda di sini..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Kirim Pesan &#8594;</button>
+      </form>
+    </div>
+  </div>
+</div>

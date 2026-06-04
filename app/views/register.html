@@ -1,140 +1,18 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KidneyHub - Daftar Akun</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 50%, #f0fdfa 100%);
-      padding: 1rem;
-    }
-    .container { width: 100%; max-width: 440px; }
-    .logo {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-    .logo a {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      text-decoration: none;
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
-    .logo-heart { color: #ef4444; font-size: 1.8rem; line-height: 1; }
-    .logo-kidney { color: #1d4ed8; }
-    .logo-hub { color: #0d9488; }
-    .logo-domain { color: #9ca3af; font-weight: 400; }
-    .logo-sub { color: #6b7280; font-size: 0.875rem; margin-top: 0.4rem; font-weight: 400; }
-    .card {
-      background: #fff;
-      border-radius: 1rem;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.07);
-      padding: 2rem;
-    }
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #111827;
-      margin-bottom: 1.5rem;
-    }
-    .form-group { margin-bottom: 1.2rem; }
-    label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #374151;
-      margin-bottom: 0.4rem;
-    }
-    input[type="text"], input[type="password"] {
-      width: 100%;
-      padding: 0.6rem 0.85rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.5rem;
-      font-size: 0.95rem;
-      color: #111827;
-      outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      background: #fff;
-    }
-    input:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-    }
-    .hint { font-size: 0.78rem; color: #9ca3af; margin-top: 0.3rem; }
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 0.75rem;
-      background: #2563eb;
-      color: #fff;
-      border: none;
-      border-radius: 0.5rem;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s;
-      margin-top: 0.5rem;
-    }
-    .btn:hover { background: #1d4ed8; }
-    .footer-link {
-      text-align: center;
-      font-size: 0.875rem;
-      color: #6b7280;
-      margin-top: 1.5rem;
-    }
-    .footer-link a { color: #2563eb; text-decoration: none; font-weight: 500; }
-    .footer-link a:hover { text-decoration: underline; }
-    .alert {
-      padding: 0.65rem 0.9rem;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      margin-bottom: 1.2rem;
-    }
-    .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="logo">
-      <a href="/login">
-        <span class="logo-heart">&#10084;</span>
-        <span><span class="logo-kidney">kidney</span><span class="logo-hub">hub</span><span class="logo-domain">.id</span></span>
-      </a>
-      <p class="logo-sub">Buat akun baru</p>
-    </div>
-
-    <div class="card">
-      <p class="card-title">Registrasi Akun</p>
-      {{error}}
-      <form method="POST" action="/register">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" name="username" placeholder="Masukkan username" required minlength="3" maxlength="50" autocomplete="username">
-          <p class="hint">Minimal 3 karakter</p>
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" placeholder="••••••••" required minlength="6" autocomplete="new-password">
-          <p class="hint">Minimal 6 karakter</p>
-        </div>
-        <div class="form-group">
-          <label for="confirm_password">Konfirmasi Password</label>
-          <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required minlength="6" autocomplete="new-password">
-        </div>
-        <button type="submit" class="btn">Daftar</button>
-      </form>
-    </div>
-
-    <p class="footer-link">Sudah punya akun? <a href="/login">Login di sini</a></p>
+{{error}}
+<form method="POST" action="/register">
+  <div class="form-group">
+    <label class="form-label" for="username">Username</label>
+    <input type="text" id="username" name="username" class="form-input" placeholder="Masukkan username" required minlength="3" maxlength="50" autocomplete="username">
+    <p class="form-hint">Minimal 3 karakter</p>
   </div>
-</body>
-</html>
+  <div class="form-group">
+    <label class="form-label" for="password">Password</label>
+    <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required minlength="6" autocomplete="new-password">
+    <p class="form-hint">Minimal 6 karakter</p>
+  </div>
+  <div class="form-group">
+    <label class="form-label" for="confirm_password">Konfirmasi Password</label>
+    <input type="password" id="confirm_password" name="confirm_password" class="form-input" placeholder="••••••••" required minlength="6" autocomplete="new-password">
+  </div>
+  <button type="submit" class="btn btn-primary btn-full">Daftar</button>
+</form>
