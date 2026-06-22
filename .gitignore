@@ -5,5 +5,6 @@ node_modules/
 # File narasi video — hanya untuk keperluan rekaman, tidak dipush
 NARASI-VIDEO-AFL3.md
 
-# Laporan Word — tidak perlu ada di repository
+# Laporan Word dan narasi — hanya lokal
 Laporan-AFL3-Microservice.docx
+NARASI-VIDEO-AFL3.md
