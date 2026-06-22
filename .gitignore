@@ -1,3 +1,9 @@
 node_modules/
 .env
 *.log
+
+# File narasi video — hanya untuk keperluan rekaman, tidak dipush
+NARASI-VIDEO-AFL3.md
+
+# Laporan Word — tidak perlu ada di repository
+Laporan-AFL3-Microservice.docx

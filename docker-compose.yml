@@ -1,15 +1,162 @@
+# KidneyHub AFL-3 — Full Microservice Architecture
+# 13 containers: Traefik | Web | Auth | Donor | Notification
+#                PostgreSQL | MongoDB | Redis | Mosquitto (MQTT)
+#                Prometheus | Grafana | Node Exporter | cAdvisor
+
 services:
 
-  db:
+  # =========================================================
+  # 1. TRAEFIK — API Gateway & Reverse Proxy
+  # =========================================================
+  traefik:
+    image: traefik:v3.0
+    container_name: kidneyhub_traefik
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=traefik-public"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=INFO"
+      - "--accesslog=true"
+    ports:
+      - "80:80"      # HTTP entrypoint
+      - "8080:8080"  # Traefik Dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - traefik-public
+    restart: unless-stopped
+
+  # =========================================================
+  # 2. WEB — Frontend KidneyHub (Node.js/Express)
+  # =========================================================
+  web:
+    build: ./app
+    container_name: kidneyhub_web
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: kidneyhub
+      DB_USER: kidneyhub
+      DB_PASSWORD: kidneyhub_pass
+      JWT_SECRET: kidneyhub_secret_2024
+      PORT: 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - traefik-public
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`localhost`) && !PathPrefix(`/api`)"
+      - "traefik.http.routers.web.entrypoints=web"
+      - "traefik.http.routers.web.priority=1"
+      - "traefik.http.services.web.loadbalancer.server.port=3000"
+    restart: unless-stopped
+
+  # =========================================================
+  # 3. AUTH SERVICE — Microservice Autentikasi (REST API)
+  # =========================================================
+  auth-service:
+    build: ./services/auth-service
+    container_name: kidneyhub_auth
+    environment:
+      DB_HOST: postgres
+      DB_NAME: kidneyhub
+      DB_USER: kidneyhub
+      DB_PASSWORD: kidneyhub_pass
+      JWT_SECRET: kidneyhub_secret_2024
+      PORT: 4000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - traefik-public
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`localhost`) && PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.auth.entrypoints=web"
+      - "traefik.http.routers.auth.priority=10"
+      - "traefik.http.services.auth.loadbalancer.server.port=4000"
+      # Definisi middleware ForwardAuth — dipakai oleh donor-service
+      - "traefik.http.middlewares.auth-middleware.forwardauth.address=http://auth-service:4000/api/auth/verify"
+      - "traefik.http.middlewares.auth-middleware.forwardauth.authResponseHeaders=X-Auth-User,X-Auth-Id"
+      - "traefik.http.middlewares.auth-middleware.forwardauth.trustForwardHeader=true"
+    restart: unless-stopped
+
+  # =========================================================
+  # 4. DONOR SERVICE — Microservice Donor (REST API + MQTT Publisher)
+  # =========================================================
+  donor-service:
+    build: ./services/donor-service
+    container_name: kidneyhub_donor
+    environment:
+      DB_HOST: postgres
+      DB_NAME: kidneyhub
+      DB_USER: kidneyhub
+      DB_PASSWORD: kidneyhub_pass
+      MQTT_HOST: mosquitto
+      PORT: 4001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    networks:
+      - traefik-public
+      - backend
+      - data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.donor.rule=Host(`localhost`) && PathPrefix(`/api/donors`)"
+      - "traefik.http.routers.donor.entrypoints=web"
+      - "traefik.http.routers.donor.priority=10"
+      - "traefik.http.routers.donor.middlewares=auth-middleware@docker"
+      - "traefik.http.services.donor.loadbalancer.server.port=4001"
+    restart: unless-stopped
+
+  # =========================================================
+  # 5. NOTIFICATION SERVICE — WebSocket + MQTT Subscriber + MongoDB
+  # =========================================================
+  notification-service:
+    build: ./services/notification-service
+    container_name: kidneyhub_notification
+    environment:
+      MONGO_URI: mongodb://mongo:27017/kidneyhub_notifications
+      MQTT_HOST: mosquitto
+      PORT: 4002
+    depends_on:
+      - mongo
+      - mosquitto
+    networks:
+      - traefik-public
+      - data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.notification.rule=Host(`localhost`) && PathPrefix(`/api/notifications`)"
+      - "traefik.http.routers.notification.entrypoints=web"
+      - "traefik.http.routers.notification.priority=10"
+      - "traefik.http.services.notification.loadbalancer.server.port=4002"
+    restart: unless-stopped
+
+  # =========================================================
+  # 6. POSTGRESQL — Database Utama (Users + Donors)
+  # =========================================================
+  postgres:
     image: postgres:15-alpine
-    container_name: kidneyhub_db
+    container_name: kidneyhub_postgres
     environment:
       POSTGRES_DB: kidneyhub
       POSTGRES_USER: kidneyhub
       POSTGRES_PASSWORD: kidneyhub_pass
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-users.sql:ro
+      - ./db/init-donors.sql:/docker-entrypoint-initdb.d/02-donors.sql:ro
     networks:
       - backend
     healthcheck:
@@ -19,64 +166,148 @@ services:
       retries: 10
     restart: unless-stopped
 
-  web1:
-    build: ./app
-    container_name: kidneyhub_web1
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: kidneyhub
-      DB_USER: kidneyhub
-      DB_PASSWORD: kidneyhub_pass
-      JWT_SECRET: kidneyhub_jwt_secret_2024
-      PORT: 3000
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - backend
-      - frontend
-    restart: unless-stopped
-
-  web2:
-    build: ./app
-    container_name: kidneyhub_web2
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: kidneyhub
-      DB_USER: kidneyhub
-      DB_PASSWORD: kidneyhub_pass
-      JWT_SECRET: kidneyhub_jwt_secret_2024
-      PORT: 3000
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - backend
-      - frontend
-    restart: unless-stopped
-
-  nginx:
-    image: nginx:alpine
-    container_name: kidneyhub_nginx
-    ports:
-      - "80:80"
+  # =========================================================
+  # 7. MONGODB — Database Notifikasi
+  # =========================================================
+  mongo:
+    image: mongo:7
+    container_name: kidneyhub_mongo
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - web1
-      - web2
+      - mongo_data:/data/db
     networks:
-      - frontend
+      - data
     restart: unless-stopped
 
+  # =========================================================
+  # 8. REDIS — Cache & Session Store
+  # =========================================================
+  redis:
+    image: redis:7-alpine
+    container_name: kidneyhub_redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+      - data
+    restart: unless-stopped
+
+  # =========================================================
+  # 9. MOSQUITTO — MQTT Broker (Message Broker)
+  # =========================================================
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: kidneyhub_mosquitto
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+    ports:
+      - "1883:1883"
+    networks:
+      - data
+      - traefik-public
+    restart: unless-stopped
+
+  # =========================================================
+  # 10. PROMETHEUS — Metrics Collector (Host + Container Monitoring)
+  # =========================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: kidneyhub_prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # =========================================================
+  # 11. GRAFANA — Dashboard Monitoring Visualisasi
+  # =========================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: kidneyhub_grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # =========================================================
+  # 12. NODE EXPORTER — Host Metrics (CPU, RAM, Disk, Network)
+  # =========================================================
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: kidneyhub_node_exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # =========================================================
+  # 13. CADVISOR — Container Metrics (CPU/RAM per container)
+  # =========================================================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: kidneyhub_cadvisor
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "8081:8080"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+# =========================================================
+# VOLUMES
+# =========================================================
 volumes:
   postgres_data:
     driver: local
+  mongo_data:
+    driver: local
+  redis_data:
+    driver: local
+  mosquitto_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
 
+# =========================================================
+# NETWORKS
+# =========================================================
 networks:
-  frontend:
+  traefik-public:
     driver: bridge
   backend:
+    driver: bridge
+  data:
+    driver: bridge
+  monitoring:
     driver: bridge

@@ -1,0 +1,12 @@
+{
+  "name": "kidneyhub-donor-service",
+  "version": "1.0.0",
+  "description": "KidneyHub Donor Management Microservice",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mqtt": "^5.3.4",
+    "pg": "^8.11.3"
+  }
+}
